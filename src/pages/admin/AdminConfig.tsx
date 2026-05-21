@@ -84,14 +84,21 @@ export const AdminConfig: React.FC = () => {
     }
   };
 
+  const [newCategoryMode, setNewCategoryMode] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
   const handleSaveProduct = async () => {
-    if (!newProduct.name || !newProduct.price) return alert('Nombre y precio son obligatorios');
+    if (!newProduct.name.trim()) { alert('El nombre del artículo es obligatorio'); return; }
+    if (!newProduct.price) { alert('El precio de venta es obligatorio'); return; }
     setSaving(true);
+
+    const categoryToUse = newCategoryMode && newCategoryName.trim() ? newCategoryName.trim() : newProduct.category;
     const dataToSave = { 
-      ...newProduct, 
-      price: parseFloat(newProduct.price),
-      purchase_price: parseFloat(newProduct.purchase_price || '0'),
-      stock: parseInt(newProduct.stock || '0')
+      ...newProduct,
+      category: categoryToUse,
+      price: parseFloat(newProduct.price) || 0,
+      purchase_price: parseFloat(newProduct.purchase_price || '0') || 0,
+      stock: parseInt(newProduct.stock || '0') || 0
     };
 
     try {
@@ -102,10 +109,15 @@ export const AdminConfig: React.FC = () => {
         result = await addProduct(dataToSave);
       }
       if (result) {
+        setSavedProduct(result);
         setShowModal(false);
         setEditingProduct(null);
+        setNewCategoryMode(false);
+        setNewCategoryName('');
         resetForm();
         loadData();
+      } else {
+        alert('No se pudo guardar. Verifica la conexión con Supabase.');
       }
     } catch (e: any) {
       alert('Error de conexión: ' + e.message);
@@ -224,6 +236,11 @@ export const AdminConfig: React.FC = () => {
     { id: 'textiles', name: 'Textiles' },
     { id: 'mas', name: 'Más categorías' }
   ];
+
+  const allCategories = Array.from(new Set([
+    ...CATEGORIES_LIST.map(c => c.name),
+    ...products.map((p: any) => p.category).filter(Boolean)
+  ])).sort();
 
   const groupedProducts = products.reduce((acc: any, prod: any) => {
     const rawCat = prod.category || 'Sin Categoría';
@@ -460,30 +477,115 @@ export const AdminConfig: React.FC = () => {
 
         {/* Modal para Editar/Crear Producto */}
         {showModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-            <div style={{ background: '#111', border: '1px solid #222', borderRadius: 20, width: '100%', maxWidth: 600, padding: 30, maxHeight: '90vh', overflowY: 'auto' }}>
-              <h2 style={{ margin: '0 0 25px', fontSize: 18, color: '#00A859' }}>{editingProduct ? 'Editar Producto' : 'Nuevo Producto'}</h2>
-              <div style={{ display: 'grid', gap: 15 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 20, alignItems: 'center' }}>
-                  <div style={{ width: 120, height: 120, background: '#000', borderRadius: 15, border: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                    {newProduct.image_url ? <img src={getImageUrl(newProduct.image_url)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '🖼️'}
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <div style={{ background: '#0f0f0f', border: '1px solid #2a2a2a', borderRadius: 24, width: '100%', maxWidth: 680, maxHeight: '92vh', overflowY: 'auto' }}>
+              {/* Header */}
+              <div style={{ background: editingProduct ? '#1565c0' : '#00A859', padding: '20px 28px', borderRadius: '24px 24px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ color: 'white', fontWeight: 900, fontSize: 18 }}>{editingProduct ? '✏️ Editar Producto' : '➕ Nuevo Producto'}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 2 }}>Todos los campos con * son obligatorios</div>
+                </div>
+                <button onClick={() => setShowModal(false)} style={{ background: 'rgba(0,0,0,0.3)', border: 'none', color: 'white', width: 36, height: 36, borderRadius: '50%', fontSize: 20, cursor: 'pointer' }}>×</button>
+              </div>
+
+              <div style={{ padding: 28, display: 'grid', gap: 18 }}>
+
+                {/* Imagen */}
+                <div style={{ display: 'flex', gap: 20, alignItems: 'center', background: '#111', borderRadius: 14, padding: 16, border: '1px solid #222' }}>
+                  <div style={{ width: 90, height: 90, background: '#000', borderRadius: 12, border: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                    {newProduct.image_url ? <img src={getImageUrl(newProduct.image_url)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="preview" /> : <span style={{ fontSize: 32 }}>🖼️</span>}
                   </div>
-                  <input type="file" accept="image/*" onChange={handleProductImageUpload} />
-                  {uploadingField === 'product_image' && <p style={{ fontSize: 11, color: '#00A859' }}>Subiendo imagen…</p>}
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 8 }}>FOTO DEL ARTÍCULO</label>
+                    <input type="file" accept="image/*" onChange={handleProductImageUpload} style={{ fontSize: 12, color: '#aaa' }} />
+                    {uploadingField === 'product_image' && <p style={{ fontSize: 11, color: '#00A859', marginTop: 6 }}>⏳ Subiendo imagen...</p>}
+                  </div>
                 </div>
-                <input type="text" placeholder="Nombre del producto" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} style={{ background: '#000', border: '1px solid #333', color: 'white', padding: 12, borderRadius: 8 }} />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15 }}>
-                  <input type="number" placeholder="Precio venta" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} style={{ background: '#000', border: '1px solid #333', color: 'white', padding: 12, borderRadius: 8 }} />
-                  <input type="number" placeholder="Stock" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} style={{ background: '#000', border: '1px solid #333', color: 'white', padding: 12, borderRadius: 8 }} />
+
+                {/* Nombre */}
+                <div>
+                  <label style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 6 }}>NOMBRE DEL ARTÍCULO *</label>
+                  <input type="text" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} placeholder="Ej: Bolsa para vino, Agenda ejecutiva..." style={{ width: '100%', padding: '12px 14px', background: '#111', border: '1px solid #333', color: 'white', borderRadius: 10, fontSize: 15, boxSizing: 'border-box' }} />
                 </div>
-                <select value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} style={{ background: '#000', border: '1px solid #333', color: 'white', padding: 12, borderRadius: 8 }}>
-                  <option value="">Seleccionar Categoría</option>
-                  {CATEGORIES_LIST.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                </select>
-                <textarea placeholder="Descripción" value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} style={{ background: '#000', border: '1px solid #333', color: 'white', padding: 12, borderRadius: 8, minHeight: 80 }} />
-                <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-                  <button onClick={handleSaveProduct} disabled={saving} style={{ flex: 1, background: '#00A859', color: 'white', border: 'none', padding: 15, borderRadius: 10, fontWeight: 800, cursor: 'pointer' }}>{saving ? 'Guardando...' : 'GUARDAR'}</button>
-                  <button onClick={() => setShowModal(false)} style={{ background: '#222', color: 'white', border: 'none', padding: 15, borderRadius: 10, cursor: 'pointer' }}>Cancelar</button>
+
+                {/* Precios */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div>
+                    <label style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 6 }}>PRECIO DE VENTA (MXN) *</label>
+                    <input type="number" min="0" step="0.01" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} placeholder="0.00" style={{ width: '100%', padding: '12px 14px', background: '#111', border: '1px solid #333', color: '#00A859', borderRadius: 10, fontSize: 18, fontWeight: 900, boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 6 }}>PRECIO DE COSTO (MXN)</label>
+                    <input type="number" min="0" step="0.01" value={newProduct.purchase_price} onChange={e => setNewProduct({...newProduct, purchase_price: e.target.value})} placeholder="0.00" style={{ width: '100%', padding: '12px 14px', background: '#111', border: '1px solid #333', color: '#aaa', borderRadius: 10, fontSize: 18, boxSizing: 'border-box' }} />
+                  </div>
+                </div>
+
+                {/* Categoría */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <label style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: 1 }}>CATEGORÍA</label>
+                    <button type="button" onClick={() => setNewCategoryMode(!newCategoryMode)} style={{ background: 'transparent', border: 'none', color: newCategoryMode ? '#e53935' : '#00A859', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>
+                      {newCategoryMode ? '× Cancelar nueva' : '+ Crear nueva categoría'}
+                    </button>
+                  </div>
+                  {newCategoryMode ? (
+                    <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nombre de la nueva categoría..." style={{ width: '100%', padding: '12px 14px', background: '#111', border: '2px solid #00A859', color: 'white', borderRadius: 10, fontSize: 14, boxSizing: 'border-box' }} autoFocus />
+                  ) : (
+                    <select value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} style={{ width: '100%', padding: '12px 14px', background: '#111', border: '1px solid #333', color: 'white', borderRadius: 10, fontSize: 14, boxSizing: 'border-box' }}>
+                      <option value="">— Seleccionar categoría —</option>
+                      {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                  )}
+                </div>
+
+                {/* Número de piezas */}
+                <div>
+                  <label style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 6 }}>NÚMERO DE PIEZAS EN EXISTENCIA</label>
+                  <input type="number" min="0" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} placeholder="0" style={{ width: '100%', padding: '12px 14px', background: '#111', border: '1px solid #333', color: 'white', borderRadius: 10, fontSize: 15, boxSizing: 'border-box' }} />
+                </div>
+
+                {/* Descripción */}
+                <div>
+                  <label style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 6 }}>DESCRIPCIÓN DEL ARTÍCULO</label>
+                  <textarea value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} placeholder="Describe el artículo: material, medidas, uso, etc." style={{ width: '100%', padding: '12px 14px', background: '#111', border: '1px solid #333', color: 'white', borderRadius: 10, fontSize: 14, minHeight: 90, resize: 'vertical', boxSizing: 'border-box' }} />
+                </div>
+
+                {/* Botones */}
+                <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
+                  <button onClick={handleSaveProduct} disabled={saving} style={{ flex: 1, background: editingProduct ? '#1565c0' : '#00A859', color: 'white', border: 'none', padding: '16px 0', borderRadius: 12, fontWeight: 900, fontSize: 15, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
+                    {saving ? '⏳ Guardando...' : editingProduct ? '✅ ACTUALIZAR PRODUCTO' : '✅ GUARDAR PRODUCTO'}
+                  </button>
+                  <button onClick={() => { setShowModal(false); setNewCategoryMode(false); setNewCategoryName(''); }} style={{ background: '#222', color: '#aaa', border: '1px solid #333', padding: '16px 20px', borderRadius: 12, cursor: 'pointer', fontWeight: 700 }}>Cancelar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Confirmación post-guardado con QR */}
+        {savedProduct && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(12px)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <div style={{ background: '#0f0f0f', border: '1px solid #00A859', borderRadius: 24, width: '100%', maxWidth: 560, overflow: 'hidden' }}>
+              <div style={{ background: '#00A859', padding: '18px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ color: 'white', fontWeight: 900, fontSize: 16 }}>✅ Producto Agregado con Éxito</div>
+                <button onClick={() => setSavedProduct(null)} style={{ background: 'rgba(0,0,0,0.3)', border: 'none', color: 'white', width: 32, height: 32, borderRadius: '50%', fontSize: 18, cursor: 'pointer' }}>×</button>
+              </div>
+              <div style={{ padding: 28, display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'center' }}>
+                <div>
+                  <div style={{ color: 'white', fontWeight: 900, fontSize: 20, marginBottom: 8 }}>{savedProduct.name}</div>
+                  {savedProduct.sku && <div style={{ color: '#00A859', fontWeight: 800, fontSize: 14, marginBottom: 4 }}>Código: #{savedProduct.sku}</div>}
+                  <div style={{ color: '#aaa', fontSize: 13, marginBottom: 4 }}>Categoría: {savedProduct.category || 'Sin categoría'}</div>
+                  <div style={{ color: '#aaa', fontSize: 13, marginBottom: 4 }}>Precio venta: <strong style={{ color: 'white' }}>${savedProduct.price} MXN</strong></div>
+                  {savedProduct.purchase_price > 0 && <div style={{ color: '#aaa', fontSize: 13, marginBottom: 4 }}>Precio costo: ${savedProduct.purchase_price} MXN</div>}
+                  <div style={{ color: '#aaa', fontSize: 13 }}>Piezas: <strong style={{ color: 'white' }}>{savedProduct.stock}</strong></div>
+                  <button onClick={() => setSavedProduct(null)} style={{ marginTop: 20, background: '#00A859', border: 'none', color: 'white', padding: '12px 24px', borderRadius: 10, fontWeight: 800, cursor: 'pointer', width: '100%' }}>Aceptar</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                  <div style={{ background: 'white', padding: 10, borderRadius: 12 }}>
+                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(window.location.origin + '/product/' + (savedProduct.sku || savedProduct.id))}`} style={{ width: 140, height: 140, display: 'block' }} alt="QR" />
+                  </div>
+                  <div style={{ color: '#00A859', fontSize: 11, fontWeight: 800, letterSpacing: 1 }}>#{savedProduct.sku || savedProduct.id?.slice(0,8)}</div>
+                  <div style={{ color: '#555', fontSize: 10, textAlign: 'center' }}>Código QR del producto</div>
                 </div>
               </div>
             </div>

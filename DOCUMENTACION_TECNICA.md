@@ -222,6 +222,14 @@ La función `loadGoogleFont(name)` inyecta dinámicamente el `<link>` de Google 
 > **El archivo `.env` NUNCA debe subirse a GitHub.** Contiene las claves secretas de Supabase.
 > Verificar que `.gitignore` lo incluya.
 
+> [!IMPORTANT]
+> **Columna `sku` en la tabla `products`:**
+> Si la base de datos es antigua y no tiene la columna `sku`, al agregar productos podría haber problemas. Para solucionarlo permanentemente, ejecuta este comando en el editor SQL de Supabase:
+> ```sql
+> ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sku text;
+> ```
+> *Nota: El sistema cuenta con resiliencia automática: si la columna no existe aún, guardará el producto omitiendo el SKU y usará el UUID para el código QR.*
+
 > [!NOTE]
 > Los productos creados **antes** de implementar el sistema de SKU no tienen código corto.
 > Usarán el UUID completo como fallback en el QR. Para actualizarlos, edita y guarda cada uno desde el panel admin.

@@ -88,17 +88,35 @@ const generateSKU = () => {
 
 export const addProduct = async (product: any) => {
   const sku = product.sku || generateSKU();
+  // Intento 1: Guardar con SKU
   const { data, error } = await supabase
     .from('products')
     .insert([{ ...product, sku, is_deleted: false }])
     .select();
-  if (error) return null;
+    
+  if (error) {
+    console.warn('Error al agregar con SKU (posiblemente falta la columna), reintentando sin SKU:', error.message);
+    // Intento 2: Reintento de emergencia sin SKU
+    const { data: retryData, error: retryError } = await supabase
+      .from('products')
+      .insert([{ ...product, is_deleted: false }])
+      .select();
+      
+    if (retryError) {
+      console.error('Error definitivo al agregar producto en Supabase:', retryError);
+      return null;
+    }
+    return retryData ? retryData[0] : null;
+  }
   return data ? data[0] : null;
 };
 
 export const updateProduct = async (id: string, updates: any) => {
   const { data, error } = await supabase.from('products').update(updates).eq('id', id).select();
-  if (error) return null;
+  if (error) {
+    console.error('Error al actualizar producto en Supabase:', error);
+    return null;
+  }
   return data ? data[0] : null;
 };
 

@@ -9,6 +9,7 @@ create table if not exists public.store_config (
 
 create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
+  sku text,
   name text not null default '',
   badge text,
   description text,
@@ -21,6 +22,9 @@ create table if not exists public.products (
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- Si la tabla ya existía, añadir la columna sku si no está presente
+alter table public.products add column if not exists sku text;
 
 -- RLS
 alter table public.store_config enable row level security;
