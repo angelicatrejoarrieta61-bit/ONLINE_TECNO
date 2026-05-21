@@ -40,6 +40,7 @@ export const AdminConfig: React.FC = () => {
   const [showArchived] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [enlargedQr, setEnlargedQr] = useState<string | null>(null);
+  const [savedProduct, setSavedProduct] = useState<any>(null);
   const [newProduct, setNewProduct] = useState({ 
     name: '', badge: '', description: '', purchase_price: '', price: '', stock: '0', category: '', image_url: '' 
   });
