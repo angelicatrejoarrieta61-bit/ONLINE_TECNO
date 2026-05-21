@@ -112,8 +112,37 @@ html, body {
 .product-title { color: white; font-size: 13px; font-weight: 800; margin: 0 0 5px; text-transform: uppercase; font-family: var(--font-subtitles); }
 .title-line { width: 30px; height: 2px; background: var(--c-primary); margin-bottom: 12px; }
 .price-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.price-value { color: white; font-size: 22px; font-weight: 900; font-family: var(--font-subtitles); }
-.price-currency { color: rgba(255, 255, 255, 0.4); font-size: 9px; margin-left: 2px; font-family: var(--font-main); }
+.price-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(0, 168, 89, 0.16);
+  border: 1px solid rgba(0, 255, 136, 0.25);
+  padding: 4px 10px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 168, 89, 0.15);
+}
+.price-symbol {
+  color: #00ff88;
+  font-size: 13px;
+  font-weight: 800;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+}
+.price-value {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 900;
+  font-family: var(--font-subtitles);
+}
+.price-currency {
+  color: #00ff88;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-left: 2px;
+  opacity: 0.85;
+}
 
 .qr-expansion-overlay {
   position: absolute; inset: 0; background: rgba(0,0,0,0.92); z-index: 200; border-radius: 25px;
@@ -121,8 +150,31 @@ html, body {
 }
 .qr-expanded-content { display: flex; flex-direction: column; align-items: center; gap: 15px; text-align: center; width: 100%; }
 .qr-expanded-title { color: #ffffff; font-family: var(--font-subtitles); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-.qr-big-box { width: 165px; height: 165px; background: white; border-radius: 15px; padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.qr-image { width: 100%; height: 100%; object-fit: contain; }
+.qr-big-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 175px;
+  height: 200px;
+  background: white;
+  border-radius: 15px;
+  padding: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-sizing: border-box;
+}
+.qr-image { width: 135px; height: 135px; object-fit: contain; }
+.qr-code-label {
+  font-family: monospace;
+  font-size: 9px;
+  color: #333333;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
 .qr-close-hint { color: rgba(255, 255, 255, 0.4); font-size: 9px; font-weight: 700; text-transform: uppercase; margin-top: 5px; }
 
 .btn-metalized {
@@ -172,7 +224,20 @@ html, body {
 .modal-price-row .cur { font-size: 12px; opacity: 0.7; }
 
 .modal-qr-section-small { display: flex; align-items: center; justify-content: center; }
+.modal-qr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
 .modal-qr { width: 50px; height: 50px; background: white; border-radius: 10px; padding: 5px; box-shadow: 0 0 20px rgba(0,168,89,0.4); }
+.modal-qr-code-label {
+  font-family: monospace;
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
 
 .modal-divider { width: 50px; height: 4px; background: var(--c-primary); margin: 0 auto 25px; border-radius: 2px; }
 .modal-description { font-size: 15px; opacity: 0.9; line-height: 1.6; margin-bottom: 20px; font-family: var(--font-main); }
@@ -180,3 +245,142 @@ html, body {
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .footer-dark { background: #000; color: white; padding: 40px 0; text-align: center; font-family: var(--font-main); }
+
+/* SEARCH BAR */
+.search-pill {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 6px 14px;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+.search-pill:focus-within {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--c-primary);
+  box-shadow: 0 0 10px rgba(0, 168, 89, 0.3);
+}
+.search-pill input {
+  background: transparent;
+  border: none;
+  color: white;
+  outline: none;
+  font-size: 13px;
+  width: 140px;
+  transition: width 0.3s ease;
+}
+.search-pill input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+.search-pill span {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+}
+
+/* MOBILE TOGGLE */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  outline: none;
+}
+
+/* RESPONSIVE MEDIA QUERIES */
+@media (max-width: 1200px) {
+  .hero-section {
+    height: auto;
+    padding: 60px 0;
+  }
+  .hero-layout {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  .hero-text-content {
+    margin-left: 0 !important;
+    max-width: 100%;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .hero-display-title {
+    font-size: 42px;
+  }
+  .hero-image-side {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0.15; /* Make it a low opacity background image */
+  }
+}
+
+@media (max-width: 991px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+  .header-container {
+    padding: 0 20px;
+  }
+  .nav-menu {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(11, 11, 11, 0.98);
+    backdrop-filter: blur(20px);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    padding: 40px;
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 999;
+  }
+  .nav-menu.mobile-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .nav-menu a {
+    font-size: 20px;
+    font-weight: 700;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-pill {
+    display: none; /* Hide search pill on small screens to save space */
+  }
+  .floating-pill-inner {
+    border-radius: 20px;
+    padding: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  .pill-item {
+    flex: 0 0 22%; /* 4 columns on mobile */
+    min-width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pill-item {
+    flex: 0 0 30%; /* 3 columns on small mobile */
+  }
+  .catalog-general-title {
+    font-size: 30px;
+  }
+}

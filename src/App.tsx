@@ -274,6 +274,7 @@ const ProductCard = ({ product, onQuickview }: any) => {
             <div className="qr-expanded-title">{product.name}</div>
             <div className="qr-big-box">
               <img src={qrUrl} alt="QR" className="qr-image" />
+              <span className="qr-code-label">{productCode}</span>
             </div>
             <div style={{ color: '#00A859', fontSize: 10, fontWeight: 800, letterSpacing: 1, background: 'rgba(0,168,89,0.1)', padding: '4px 12px', borderRadius: 20, maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               #{product.sku ? productCode : productCode.split('-')[0]}
@@ -339,7 +340,10 @@ const QuickviewModal = ({ product, origin, onClose }: any) => {
                 <span className="cur">MXN</span>
               </div>
               <div className="modal-qr-section-small">
-                <img src={qrUrl} alt="QR" className="modal-qr" />
+                <div className="modal-qr-box">
+                  <img src={qrUrl} alt="QR" className="modal-qr" />
+                  <span className="modal-qr-code-label">{productCode}</span>
+                </div>
               </div>
             </div>
             <div className="modal-divider"></div>
@@ -367,6 +371,7 @@ const FrontStore = () => {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [originRect, setOriginRect] = useState<any>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     loadStorefrontData().then(({ config: cfg, products: prods, fetchErrors: errs }) => {
@@ -446,13 +451,13 @@ const FrontStore = () => {
       <header className="main-header dark-header">
         <div className="container header-container">
           <Link to="/" className="brand-logo"><Logo url={config.logo_url} /></Link>
-          <nav className="nav-menu">
-            <a href="#" className="active">Tienda</a>
-            <a href="#">Colecciones</a>
-            <a href="#">Franquiciatarios</a>
-            <a href="#">Personalización</a>
-            <a href="#">Nosotros</a>
-            <a href="#">Contacto</a>
+          <nav className={`nav-menu ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+            <a href="#" className="active" onClick={() => setMobileMenuOpen(false)}>Tienda</a>
+            <a href="#" onClick={() => setMobileMenuOpen(false)}>Colecciones</a>
+            <a href="#" onClick={() => setMobileMenuOpen(false)}>Franquiciatarios</a>
+            <a href="#" onClick={() => setMobileMenuOpen(false)}>Personalización</a>
+            <a href="#" onClick={() => setMobileMenuOpen(false)}>Nosotros</a>
+            <a href="#" onClick={() => setMobileMenuOpen(false)}>Contacto</a>
           </nav>
           <div className="header-actions">
             <div className="search-pill">
@@ -486,6 +491,13 @@ const FrontStore = () => {
               </span>
             </div>
             <Link to="/admin" className="admin-trigger">⚙️</Link>
+            <button
+              className="mobile-menu-toggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Menu"
+            >
+              {mobileMenuOpen ? '✕' : '☰'}
+            </button>
           </div>
         </div>
       </header>
